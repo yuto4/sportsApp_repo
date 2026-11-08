@@ -1,4 +1,5 @@
 import type { Match, MatchStatus, SeasonData, Team } from '../types';
+import { findClub } from './clubs';
 
 /** API-Football における J2 リーグの league id */
 export const J2_LEAGUE_ID = 99;
@@ -36,13 +37,23 @@ export async function fetchApiFootballSeason(key: string, season: number): Promi
     get<ApiFixture>(`/fixtures?league=${J2_LEAGUE_ID}&season=${season}`, key),
   ]);
 
-  const teams: Team[] = apiTeams.map(({ team }, i) => ({
-    id: team.id,
-    name: team.name,
-    shortName: team.code ?? team.name.slice(0, 4),
-    color: PALETTE[i % PALETTE.length],
-    logo: team.logo,
-  }));
+  // 既知のクラブは日本語名・クラブカラーで表示し、ロゴは API のものを使う
+  const teams: Team[] = apiTeams.map(({ team }, i) => {
+    const club = findClub(team.name);
+    if (club) {
+      const { key: _key, ...rest } = club;
+      return { ...rest, id: team.id, logo: team.logo || club.logo };
+    }
+    return {
+      id: team.id,
+      name: team.name,
+      shortName: team.code ?? team.name.slice(0, 4),
+      color: PALETTE[i % PALETTE.length],
+      textColor: '#FFFFFF',
+      accentColor: PALETTE[i % PALETTE.length],
+      logo: team.logo,
+    };
+  });
 
   const matches: Match[] = apiFixtures.map((f) => ({
     id: f.fixture.id,

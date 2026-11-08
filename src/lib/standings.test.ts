@@ -3,11 +3,12 @@ import type { Match, Team } from '../types';
 import { computeStandings, currentRound, lastMatch, nextMatch, resultFor } from './standings';
 import { generateSampleSeason, roundRobin } from '../data/sample';
 import { mapStatus } from '../data/apiFootball';
+import { J2_CLUBS, findClub } from '../data/clubs';
 
 const teams: Team[] = [
-  { id: 1, name: 'A', shortName: 'A', color: '#000' },
-  { id: 2, name: 'B', shortName: 'B', color: '#000' },
-  { id: 3, name: 'C', shortName: 'C', color: '#000' },
+  { id: 1, name: 'A', shortName: 'A', color: '#000', textColor: '#fff', accentColor: '#000' },
+  { id: 2, name: 'B', shortName: 'B', color: '#000', textColor: '#fff', accentColor: '#000' },
+  { id: 3, name: 'C', shortName: 'C', color: '#000', textColor: '#fff', accentColor: '#000' },
 ];
 const m = (id: number, homeId: number, awayId: number, hs: number | null, as: number | null, day: number): Match => ({
   id, round: id, kickoff: `2026-08-${String(day).padStart(2, '0')}T15:00:00+09:00`, homeId, awayId,
@@ -65,4 +66,24 @@ it('API-Footballのステータス変換', () => {
   expect(mapStatus('2H')).toBe('live');
   expect(mapStatus('PST')).toBe('postponed');
   expect(mapStatus('NS')).toBe('scheduled');
+});
+
+describe('クラブマスタ', () => {
+  it('20クラブ・カラーはすべて6桁のHEX・キーは重複なし', () => {
+    expect(J2_CLUBS).toHaveLength(20);
+    const hex = /^#[0-9A-F]{6}$/i;
+    for (const c of J2_CLUBS) {
+      expect([c.color, c.textColor, c.accentColor].every((x) => hex.test(x))).toBe(true);
+      expect(c.logo).toMatch(/^https:\/\//);
+    }
+    expect(new Set(J2_CLUBS.map((c) => c.key)).size).toBe(20);
+  });
+
+  it('API の英語名から日本語クラブ名を引ける', () => {
+    expect(findClub('Júbilo Iwata')?.shortName).toBe('磐田');
+    expect(findClub('Tochigi City FC')?.shortName).toBe('栃木C');
+    expect(findClub('Yokohama FC')?.shortName).toBe('横浜FC');
+    expect(findClub('Yokohama F. Marinos')).toBeUndefined();
+    expect(findClub('Hokkaido Consadole Sapporo')?.name).toBe('北海道コンサドーレ札幌');
+  });
 });

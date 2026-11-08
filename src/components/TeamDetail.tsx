@@ -5,6 +5,7 @@ import { FavoriteButton } from './FavoriteButton';
 import { FormChips } from './FormChips';
 import { MatchCard } from './MatchCard';
 import { TeamBadge } from './TeamBadge';
+import { teamVars } from '../lib/teamStyle';
 
 interface Props {
   team: Team;
@@ -31,12 +32,12 @@ export function TeamDetail({ team, row, matches, teams, isFavorite, toggle, open
   return (
     <div className="sheet-backdrop" onClick={onClose}>
       <div className="sheet" role="dialog" aria-modal="true" aria-label={team.name} onClick={(e) => e.stopPropagation()}>
-        <header className="sheet-head" style={{ ['--team' as string]: team.color }}>
-          <TeamBadge team={team} size={44} />
+        <header className="team-band sheet-head" style={teamVars(team)}>
+          <span className="band-logo"><TeamBadge team={team} size={48} /></span>
           <div className="fav-title">
             <h2>{team.name}</h2>
             {row && (
-              <span className="muted">
+              <span className="band-sub">
                 {row.rank}位 / 勝点{row.points} / {row.won}勝{row.drawn}分{row.lost}敗
               </span>
             )}

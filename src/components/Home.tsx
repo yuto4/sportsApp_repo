@@ -5,6 +5,7 @@ import { FavoriteButton } from './FavoriteButton';
 import { FormChips } from './FormChips';
 import { MatchCard } from './MatchCard';
 import { TeamBadge } from './TeamBadge';
+import { teamVars } from '../lib/teamStyle';
 
 interface Props {
   data: SeasonData;
@@ -64,15 +65,16 @@ function FavoriteCard({
   const upcoming = teamMatches(matches, team.id).filter((m) => m.status === 'scheduled' && m !== next).slice(0, 3);
 
   return (
-    <article className="fav-card" style={{ ['--team' as string]: team.color }}>
-      <header className="fav-head" onClick={() => openTeam(team.id)}>
-        <TeamBadge team={team} size={40} />
+    <article className="fav-card" style={teamVars(team)}>
+      <header className="team-band" onClick={() => openTeam(team.id)}>
+        <span className="band-logo"><TeamBadge team={team} size={48} /></span>
         <div className="fav-title">
           <h2>{team.name}</h2>
           <FormChips form={row.form} />
         </div>
         <FavoriteButton active label={team.name} onClick={toggle} />
       </header>
+      <div className="fav-body">
 
       <div className="stats">
         <Stat label="順位" value={`${row.rank}`} unit={`/${total}`} />
@@ -115,6 +117,7 @@ function FavoriteCard({
           </ul>
         </section>
       )}
+      </div>
     </article>
   );
 }

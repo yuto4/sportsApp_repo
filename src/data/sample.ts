@@ -1,5 +1,5 @@
 import type { Match, SeasonData, Team } from '../types';
-import { SAMPLE_TEAMS } from './teams';
+import { SAMPLE_TEAMS } from './clubs';
 
 /** 決定的な疑似乱数 (mulberry32) */
 function rng(seed: number) {

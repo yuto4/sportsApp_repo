@@ -2,8 +2,12 @@ export interface Team {
   id: number;
   name: string;
   shortName: string;
-  /** チームカラー (CSS color) */
+  /** クラブカラー: 基調色 */
   color: string;
+  /** 基調色の上に載せる文字色 */
+  textColor: string;
+  /** 差し色 */
+  accentColor: string;
   logo?: string;
 }
 

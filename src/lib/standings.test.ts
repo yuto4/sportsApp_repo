@@ -87,3 +87,27 @@ describe('クラブマスタ', () => {
     expect(findClub('Hokkaido Consadole Sapporo')?.name).toBe('北海道コンサドーレ札幌');
   });
 });
+
+describe('API-Football 変換', () => {
+  it('プレーオフを除外し、既知クラブは日本語名・クラブカラーになる', async () => {
+    const { toSeasonData, regularRound } = await import('../data/apiFootball');
+    expect(regularRound('Regular Season - 12')).toBe(12);
+    expect(regularRound('Play-offs - 1st')).toBeNull();
+    const fx = (id: number, round: string) => ({
+      fixture: { id, date: '2026-08-08T05:00:00+00:00', status: { short: 'FT' }, venue: { name: 'X' } },
+      league: { round }, teams: { home: { id: 286 }, away: { id: 9999 } }, goals: { home: 2, away: 1 },
+    });
+    const d = toSeasonData(
+      [
+        { team: { id: 286, name: 'Vegalta Sendai', code: 'HOU', logo: 'https://example.com/a.png' } },
+        { team: { id: 9999, name: 'Unknown FC', code: null, logo: '' } },
+      ],
+      [fx(1, 'Regular Season - 1'), fx(2, 'Play-offs - 1st')],
+      2026,
+    );
+    expect(d.season).toBe('2026/27');
+    expect(d.matches.map((m) => m.id)).toEqual([1]);
+    expect(d.teams[0]).toMatchObject({ id: 286, shortName: '仙台', color: '#FFD700', logo: 'https://example.com/a.png' });
+    expect(d.teams[1]).toMatchObject({ shortName: 'Unknown FC' });
+  });
+});

@@ -37,20 +37,31 @@ npm run build    # 本番ビルド (dist/)
 - エンブレム: [TheSportsDB](https://www.thesportsdb.com/) の画像を参照(アプリ内には同梱していません)。読み込めない場合はクラブカラーの頭文字バッジに自動で切り替わります
 - エンブレム・クラブカラーの権利は各クラブに帰属します。アプリを一般公開する場合は、各クラブ・Jリーグの利用規定を確認してください
 
-実データを使う場合は [API-Football](https://www.api-football.com/) のAPIキーを取得し、`.env.local` を作成します。
+## 実データ (API-Football)
+
+APIキーをブラウザに渡さないよう、データは**ビルド時に取得**して `data/season.json` として配信します。
 
 ```bash
-cp .env.example .env.local
-# VITE_DATA_SOURCE=api-football
-# VITE_API_FOOTBALL_KEY=<あなたのキー>
-# VITE_SEASON=2026
+API_FOOTBALL_KEY=<キー> SEASON=2026 npm run fetch-data   # public/data/season.json を生成
+npm run dev
 ```
 
-- J2 の league id は `99`。チーム一覧と全試合を取得し、順位表は試合結果から計算します
+- J2 の league id は `99`。チーム一覧と全試合を取得し、順位表はリーグ戦の結果から計算します(昇格プレーオフは除外)
 - API の英語チーム名を `clubs.ts` と照合し、日本語名・クラブカラーで表示します(エンブレムは API のものを使用)
-- 無料枠のリクエスト数節約のため、取得結果は10分間キャッシュします(⟳ ボタンで強制更新)
-- 注意: `VITE_` 変数はビルド後のJSに埋め込まれるため、公開サイトにする場合はキーを隠すサーバー側プロキシを用意してください
-- 無料プランでは取得できるシーズンに制限がある場合があります
+- **注意: API-Football の無料プランは 2022〜2024 シーズンのみ取得可能**です。2026/27 シーズンの取得には有料プランが必要です
+
+## スマホで見る (GitHub Pages で公開)
+
+`.github/workflows/deploy.yml` が、push 時と日本時間 6:15〜24:15 の2時間おきに
+データ取得 → ビルド → GitHub Pages への公開 を自動で行います。
+
+初回だけ GitHub のリポジトリ設定で次を行ってください(スマホのブラウザからも可能)。
+
+1. **Settings → Pages → Build and deployment → Source** を「GitHub Actions」にする
+2. **Settings → Secrets and variables → Actions → Secrets** に `API_FOOTBALL_KEY` を登録
+3. (任意) 同じ画面の **Variables** に `SEASON`(例: `2024`)を登録。未設定なら `2026`
+
+公開URL: `https://<ユーザー名>.github.io/<リポジトリ名>/`(スマホのホーム画面に追加するとアプリのように使えます)
 
 ## 構成
 

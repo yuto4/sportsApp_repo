@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { SeasonData } from './types';
 import { loadSeason } from './data';
+import { fmtDate, fmtTime } from './lib/format';
 import { computeStandings } from './lib/standings';
 import { useFavorites } from './lib/useFavorites';
 import { Fixtures } from './components/Fixtures';
@@ -29,9 +30,9 @@ export default function App() {
   const [openTeamId, setOpenTeamId] = useState<number | null>(null);
   const { favorites, toggle, isFavorite } = useFavorites();
 
-  const load = useCallback((force = false) => {
+  const load = useCallback(() => {
     setError(null);
-    loadSeason(force).then(setData).catch((e: Error) => setError(e.message));
+    loadSeason().then(setData).catch((e: Error) => setError(e.message));
   }, []);
 
   useEffect(() => load(), [load]);
@@ -62,17 +63,19 @@ export default function App() {
         {data && (
           <span className="season">
             {data.season}
-            {data.source === 'sample' && <span className="sample-tag">サンプル</span>}
+            <span className="sample-tag">
+              {data.source === 'sample' ? 'サンプル' : `${fmtDate(data.fetchedAt)} ${fmtTime(data.fetchedAt)} 更新`}
+            </span>
           </span>
         )}
-        <button type="button" className="refresh" onClick={() => load(true)} aria-label="更新">⟳</button>
+        <button type="button" className="refresh" onClick={load} aria-label="更新">⟳</button>
       </header>
 
       <main className="content">
         {error && (
           <div className="error">
             データの取得に失敗しました: {error}
-            <button type="button" onClick={() => load(true)}>再試行</button>
+            <button type="button" onClick={load}>再試行</button>
           </div>
         )}
         {!data && !error && <p className="muted center">読み込み中…</p>}

@@ -89,7 +89,7 @@ export function generateSampleSeason(now = new Date(), teams: Team[] = SAMPLE_TE
   });
 
   return {
-    season: '2026-27',
+    season: '2026/27',
     teams,
     matches,
     source: 'sample',

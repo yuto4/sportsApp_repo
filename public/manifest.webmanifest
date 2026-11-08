@@ -1,9 +1,9 @@
 {
   "name": "J2 ナビ",
   "short_name": "J2ナビ",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#f4f6f5",
   "theme_color": "#0b5d3b",
-  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
 }

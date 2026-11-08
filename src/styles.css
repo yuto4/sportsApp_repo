@@ -115,7 +115,7 @@ h1, h2, h3 { margin: 0; }
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .stat { background: var(--surface-2); border-radius: 10px; padding: 8px; text-align: center; display: flex; flex-direction: column; }
 .stat-label { font-size: .7rem; color: var(--muted); }
-.stat-value { font-size: 1.25rem; font-weight: 800; }
+.stat-value { font-size: clamp(.95rem, 4.6vw, 1.25rem); font-weight: 800; white-space: nowrap; }
 .stat-value small { font-size: .7rem; color: var(--muted); font-weight: 400; }
 .pill { background: var(--brand); color: #fff; border-radius: 999px; padding: 1px 8px; font-size: .72rem; }
 .next-body { background: var(--brand-soft); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
@@ -159,7 +159,7 @@ h1, h2, h3 { margin: 0; }
 /* 順位表 */
 .table-wrap { overflow-x: auto; background: var(--surface); border-radius: 12px; border: 1px solid var(--border); }
 .standings { width: 100%; border-collapse: collapse; font-size: .85rem; font-variant-numeric: tabular-nums; }
-.standings th { font-size: .72rem; color: var(--muted); font-weight: 600; padding: 8px 4px; border-bottom: 1px solid var(--border); }
+.standings th { white-space: nowrap; font-size: .72rem; color: var(--muted); font-weight: 600; padding: 8px 4px; border-bottom: 1px solid var(--border); }
 .standings td { text-align: center; padding: 7px 4px; border-bottom: 1px solid var(--border); }
 .standings tr:last-child td { border-bottom: 0; }
 .standings tbody tr { cursor: pointer; }
@@ -167,6 +167,7 @@ h1, h2, h3 { margin: 0; }
 .standings .rank { font-weight: 700; box-shadow: inset 4px 0 0 transparent; }
 .standings .pts { font-weight: 800; }
 .team-cell { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+.team-cell > span:not(.star):not(.badge) { overflow: hidden; text-overflow: ellipsis; max-width: 7.5em; }
 .star { color: var(--fav); }
 tr.zone-promo .rank { box-shadow: inset 4px 0 0 var(--promo); }
 tr.zone-playoff .rank { box-shadow: inset 4px 0 0 var(--playoff); }

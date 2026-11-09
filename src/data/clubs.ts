@@ -1,7 +1,7 @@
 import type { Team } from '../types';
 
 export interface Club extends Omit<Team, 'id'> {
-  /** API-Football 等の英語名とマッチさせるキー (小文字英数字のみ) */
+  /** 英語名とマッチさせるキー (小文字英数字のみ) */
   key: string;
 }
 

@@ -37,31 +37,30 @@ npm run build    # 本番ビルド (dist/)
 - エンブレム: [TheSportsDB](https://www.thesportsdb.com/) の画像を参照(アプリ内には同梱していません)。読み込めない場合はクラブカラーの頭文字バッジに自動で切り替わります
 - エンブレム・クラブカラーの権利は各クラブに帰属します。アプリを一般公開する場合は、各クラブ・Jリーグの利用規定を確認してください
 
-## 実データ (API-Football)
+## 実データ (Wikipedia)
 
-APIキーをブラウザに渡さないよう、データは**ビルド時に取得**して `data/season.json` として配信します。
+試合データは Wikipedia 日本語版「[2026/27シーズンのJ2リーグ](https://ja.wikipedia.org/wiki/2026/27%E3%82%B7%E3%83%BC%E3%82%BA%E3%83%B3%E3%81%AEJ2%E3%83%AA%E3%83%BC%E3%82%B0)」の**戦績表**から、ビルド時に取得します。
 
 ```bash
-API_FOOTBALL_KEY=<キー> SEASON=2026 npm run fetch-data   # public/data/season.json を生成
+npm run fetch-data   # public/data/season.json を生成 (無ければサンプルデータで表示)
 npm run dev
 ```
 
-- J2 の league id は `99`。チーム一覧と全試合を取得し、順位表はリーグ戦の結果から計算します(昇格プレーオフは除外)
-- API の英語チーム名を `clubs.ts` と照合し、日本語名・クラブカラーで表示します(エンブレムは API のものを使用)
-- **注意: API-Football の無料プランは 2022〜2024 シーズンのみ取得可能**です。2026/27 シーズンの取得には有料プランが必要です
+- 記事名はシーズンから自動で決まります(7月以降は「その年/翌年」、6月までは「前年/その年」)。`SEASON_START_YEAR=2026` で指定も可能
+- 順位表は戦績表の試合結果から計算します(勝点 → 得失点差 → 総得点)
+- 戦績表には**キックオフ時刻が無く**、試合が終わると**日付がスコアに置き換わる**ため、
+  公開中のデータから日付を引き継ぎます。引き継ぐ日付が無い過去の試合は「第N節」のみ表示します
+- 1回の取得で Wikipedia へのリクエストは1回だけです。取得や読み取りに失敗した場合は前回のデータを使い続けます
+- データのライセンスは [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.ja)。アプリ内に出典を表示しています
 
 ## スマホで見る (GitHub Pages で公開)
 
 `.github/workflows/deploy.yml` が、push 時と日本時間 6:15〜24:15 の2時間おきに
 データ取得 → ビルド → GitHub Pages への公開 を自動で行います。
 
-初回だけ GitHub のリポジトリ設定で次を行ってください(スマホのブラウザからも可能)。
+初回だけ GitHub のリポジトリ設定で **Settings → Pages → Build and deployment → Source** を「GitHub Actions」にしてください。
 
-1. **Settings → Pages → Build and deployment → Source** を「GitHub Actions」にする
-2. **Settings → Secrets and variables → Actions → Secrets** に `API_FOOTBALL_KEY` を登録
-3. (任意) 同じ画面の **Variables** に `SEASON`(例: `2024`)を登録。未設定なら `2026`
-
-公開URL: `https://<ユーザー名>.github.io/<リポジトリ名>/`(スマホのホーム画面に追加するとアプリのように使えます)
+公開URL: https://yuto4.github.io/sportsApp_repo/ (スマホのホーム画面に追加するとアプリのように使えます)
 
 ## 構成
 

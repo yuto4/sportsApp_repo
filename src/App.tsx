@@ -92,6 +92,21 @@ export default function App() {
         {data && tab === 'teams' && (
           <Teams teams={data.teams} isFavorite={isFavorite} toggle={toggle} openTeam={setOpenTeamId} />
         )}
+        {data && (
+          <footer className="credit">
+            {data.source === 'wikipedia' && data.sourceUrl ? (
+              <>
+                データ出典: <a href={data.sourceUrl} target="_blank" rel="noreferrer">Wikipedia「{data.sourceTitle}」</a>
+                (<a href="https://creativecommons.org/licenses/by-sa/4.0/deed.ja" target="_blank" rel="noreferrer">CC BY-SA 4.0</a>)。
+                試合結果は有志の編集で反映されるため、更新に時間差があります。
+              </>
+            ) : (
+              <>表示中のデータは自動生成したサンプルです(実際の試合結果ではありません)。</>
+            )}
+            <br />
+            エンブレム画像: TheSportsDB。エンブレム・クラブカラーの権利は各クラブに帰属します。
+          </footer>
+        )}
       </main>
 
       <nav className="tabbar">

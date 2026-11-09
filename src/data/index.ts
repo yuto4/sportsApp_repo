@@ -4,7 +4,7 @@ import { generateSampleSeason } from './sample';
 /**
  * `npm run fetch-data` (または GitHub Actions) が生成した data/season.json を読み込む。
  * 無ければサンプルデータで表示する。
- * APIキーはブラウザに渡さず、データ取得はビルド時にだけ行う。
+ * データ取得はビルド時にだけ行う (ブラウザから Wikipedia へはアクセスしない)。
  */
 export async function loadSeason(): Promise<SeasonData> {
   try {

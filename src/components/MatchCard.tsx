@@ -32,7 +32,7 @@ export function MatchCard({ match, teams, isFavorite, perspective, showDate, onT
   return (
     <div className={`match ${fav ? 'match-fav' : ''} ${result ? `res-${result}` : ''}`}>
       <div className="match-meta">
-        {showDate && <span>{fmtDate(match.kickoff)}</span>}
+        {showDate && match.kickoff && <span>{fmtDate(match.kickoff)}</span>}
         <span>第{match.round}節</span>
         {match.venue && <span className="venue">{match.venue}</span>}
       </div>
@@ -45,8 +45,10 @@ export function MatchCard({ match, teams, isFavorite, perspective, showDate, onT
             <span className="score-num live">{match.homeScore ?? 0} - {match.awayScore ?? 0}</span>
           ) : match.status === 'postponed' ? (
             <span className="muted">延期</span>
-          ) : (
+          ) : match.kickoff && match.timeKnown ? (
             <span className="kickoff">{fmtTime(match.kickoff)}</span>
+          ) : (
+            <span className="kickoff">vs</span>
           )}
           {match.status === 'live' && <span className="live-tag">LIVE</span>}
         </div>

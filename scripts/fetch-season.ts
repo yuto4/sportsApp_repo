@@ -1,18 +1,18 @@
 /**
- * API-Football から J2 の試合データを取得して public/data/season.json に保存する。
- *   API_FOOTBALL_KEY=xxxx SEASON=2026 npm run fetch-data
+ * Wikipedia「20XX/YYシーズンのJ2リーグ」から試合データを取得して public/data/season.json に保存する。
+ *   npm run fetch-data
  *
- * - キーが無い場合は何もせず終了する (アプリはサンプルデータで表示される)
- * - 取得に失敗した場合は PREVIOUS_DATA_URL (公開中のサイトのデータ) を引き継ぎ、
- *   警告だけ出して正常終了する。一時的な API の不調でワークフロー全体を失敗させない
- *   (失敗通知メールが毎回届くのを防ぐ) ため。
+ * - 1回の実行で Wikipedia へのリクエストは記事本文の1回だけ
+ * - PREVIOUS_DATA_URL (公開中のサイトのデータ) があれば、終了済み試合の日付を引き継ぐ
+ * - 取得や読み取りに失敗した場合は前回のデータを引き継ぎ、警告だけ出して正常終了する
+ *   (ワークフローを失敗させて通知メールが毎回届くのを防ぐため)
  */
 import { mkdir, writeFile } from 'node:fs/promises';
-import { fetchApiFootballSeason } from '../src/data/apiFootball';
+import { articleTitle, carryOverDates, parseSeason, rawUrl, seasonStartYear } from '../src/data/wikipedia';
 import type { SeasonData } from '../src/types';
 
-const key = process.env.API_FOOTBALL_KEY;
-const season = Number(process.env.SEASON || 2026);
+const USER_AGENT = 'J2NaviApp/0.1 (https://github.com/yuto4/sportsApp_repo)';
+const startYear = Number(process.env.SEASON_START_YEAR || seasonStartYear());
 const previousUrl = process.env.PREVIOUS_DATA_URL;
 const out = new URL('../public/data/season.json', import.meta.url);
 
@@ -31,28 +31,27 @@ async function loadPrevious(): Promise<SeasonData | null> {
     const res = await fetch(previousUrl);
     if (!res.ok) return null;
     const data = (await res.json()) as SeasonData;
-    return data.matches?.length ? data : null;
+    return data.source === 'wikipedia' && data.matches?.length ? data : null;
   } catch {
     return null;
   }
 }
 
-if (!key) {
-  console.log('API_FOOTBALL_KEY が未設定のため、サンプルデータを使います。');
-  process.exit(0);
-}
+const previous = await loadPrevious();
+const title = articleTitle(startYear);
 
 try {
-  const data = await fetchApiFootballSeason(key, season);
-  if (data.teams.length === 0 || data.matches.length === 0) {
-    throw new Error(`${season} シーズンのデータが空です`);
-  }
+  const res = await fetch(rawUrl(title), { headers: { 'User-Agent': USER_AGENT } });
+  if (!res.ok) throw new Error(`Wikipedia: HTTP ${res.status}`);
+  const data = carryOverDates(parseSeason(await res.text(), startYear), previous);
   await save(data);
   const finished = data.matches.filter((m) => m.status === 'finished').length;
-  console.log(`保存しました: ${data.season} / ${data.teams.length}チーム / ${data.matches.length}試合 (終了 ${finished})`);
+  const dated = data.matches.filter((m) => m.kickoff).length;
+  console.log(
+    `保存しました: ${title} / ${data.teams.length}チーム / ${data.matches.length}試合 (終了 ${finished}, 日付あり ${dated})`,
+  );
 } catch (e) {
   const reason = e instanceof Error ? e.message : String(e);
-  const previous = await loadPrevious();
   if (previous) {
     await save(previous);
     warn(`取得に失敗したため、前回のデータ (${previous.fetchedAt}) を引き継ぎます: ${reason}`);

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { Match, Team } from '../types';
 import { computeStandings, currentRound, lastMatch, nextMatch, resultFor } from './standings';
 import { generateSampleSeason, roundRobin } from '../data/sample';
-import { mapStatus } from '../data/apiFootball';
 import { J2_CLUBS, findClub } from '../data/clubs';
 
 const teams: Team[] = [
@@ -12,7 +11,7 @@ const teams: Team[] = [
 ];
 const m = (id: number, homeId: number, awayId: number, hs: number | null, as: number | null, day: number): Match => ({
   id, round: id, kickoff: `2026-08-${String(day).padStart(2, '0')}T15:00:00+09:00`, homeId, awayId,
-  homeScore: hs, awayScore: as, status: hs === null ? 'scheduled' : 'finished',
+  homeScore: hs, awayScore: as, status: hs === null ? 'scheduled' : 'finished', timeKnown: true,
 });
 
 describe('computeStandings', () => {
@@ -56,17 +55,11 @@ describe('sample data', () => {
     const now = new Date('2026-11-08T12:00:00+09:00');
     const s = generateSampleSeason(now);
     for (const x of s.matches) {
-      expect(x.status === 'finished').toBe(new Date(x.kickoff).getTime() + 2 * 3600e3 < now.getTime());
+      expect(x.status === 'finished').toBe(new Date(x.kickoff!).getTime() + 2 * 3600e3 < now.getTime());
     }
   });
 });
 
-it('API-Footballのステータス変換', () => {
-  expect(mapStatus('FT')).toBe('finished');
-  expect(mapStatus('2H')).toBe('live');
-  expect(mapStatus('PST')).toBe('postponed');
-  expect(mapStatus('NS')).toBe('scheduled');
-});
 
 describe('クラブマスタ', () => {
   it('20クラブ・カラーはすべて6桁のHEX・キーは重複なし', () => {
@@ -79,7 +72,7 @@ describe('クラブマスタ', () => {
     expect(new Set(J2_CLUBS.map((c) => c.key)).size).toBe(20);
   });
 
-  it('API の英語名から日本語クラブ名を引ける', () => {
+  it('英語名から日本語クラブ名を引ける', () => {
     expect(findClub('Júbilo Iwata')?.shortName).toBe('磐田');
     expect(findClub('Tochigi City FC')?.shortName).toBe('栃木C');
     expect(findClub('Yokohama FC')?.shortName).toBe('横浜FC');
@@ -88,26 +81,3 @@ describe('クラブマスタ', () => {
   });
 });
 
-describe('API-Football 変換', () => {
-  it('プレーオフを除外し、既知クラブは日本語名・クラブカラーになる', async () => {
-    const { toSeasonData, regularRound } = await import('../data/apiFootball');
-    expect(regularRound('Regular Season - 12')).toBe(12);
-    expect(regularRound('Play-offs - 1st')).toBeNull();
-    const fx = (id: number, round: string) => ({
-      fixture: { id, date: '2026-08-08T05:00:00+00:00', status: { short: 'FT' }, venue: { name: 'X' } },
-      league: { round }, teams: { home: { id: 286 }, away: { id: 9999 } }, goals: { home: 2, away: 1 },
-    });
-    const d = toSeasonData(
-      [
-        { team: { id: 286, name: 'Vegalta Sendai', code: 'HOU', logo: 'https://example.com/a.png' } },
-        { team: { id: 9999, name: 'Unknown FC', code: null, logo: '' } },
-      ],
-      [fx(1, 'Regular Season - 1'), fx(2, 'Play-offs - 1st')],
-      2026,
-    );
-    expect(d.season).toBe('2026/27');
-    expect(d.matches.map((m) => m.id)).toEqual([1]);
-    expect(d.teams[0]).toMatchObject({ id: 286, shortName: '仙台', color: '#FFD700', logo: 'https://example.com/a.png' });
-    expect(d.teams[1]).toMatchObject({ shortName: 'Unknown FC' });
-  });
-});

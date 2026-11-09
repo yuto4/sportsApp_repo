@@ -16,8 +16,10 @@ export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'postponed';
 export interface Match {
   id: number;
   round: number;
-  /** ISO 8601 */
-  kickoff: string;
+  /** 試合日時 ISO 8601。日付が分からない試合は undefined */
+  kickoff?: string;
+  /** キックオフ時刻まで分かっているか (false なら日付のみ) */
+  timeKnown: boolean;
   homeId: number;
   awayId: number;
   homeScore: number | null;
@@ -47,6 +49,9 @@ export interface SeasonData {
   season: string;
   teams: Team[];
   matches: Match[];
-  source: 'sample' | 'api-football';
+  source: 'sample' | 'wikipedia';
+  /** 出典 (Wikipedia の記事など) */
+  sourceTitle?: string;
+  sourceUrl?: string;
   fetchedAt: string;
 }

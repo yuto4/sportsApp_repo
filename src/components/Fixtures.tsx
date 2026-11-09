@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import type { SeasonData, Team } from '../types';
 import { dateKey, fmtDate } from '../lib/format';
-import { currentRound } from '../lib/standings';
+import { byRound, currentRound } from '../lib/standings';
 import { MatchCard } from './MatchCard';
 
 interface Props {
@@ -20,11 +20,11 @@ export function Fixtures({ data, teams, favorites, isFavorite, openTeam }: Props
   const list = data.matches
     .filter((m) => m.round === round)
     .filter((m) => !favOnly || isFavorite(m.homeId) || isFavorite(m.awayId))
-    .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+    .sort(byRound);
 
   const byDate = new Map<string, typeof list>();
   for (const m of list) {
-    const k = dateKey(m.kickoff);
+    const k = m.kickoff ? dateKey(m.kickoff) : '';
     byDate.set(k, [...(byDate.get(k) ?? []), m]);
   }
 
@@ -51,7 +51,7 @@ export function Fixtures({ data, teams, favorites, isFavorite, openTeam }: Props
 
       {[...byDate.entries()].map(([day, ms]) => (
         <section key={day}>
-          <h3 className="date-head">{fmtDate(ms[0].kickoff)}</h3>
+          {day && <h3 className="date-head">{fmtDate(ms[0].kickoff!)}</h3>}
           <div className="stack-sm">
             {ms.map((m) => (
               <MatchCard key={m.id} match={m} teams={teams} isFavorite={isFavorite} onTeamClick={openTeam} />

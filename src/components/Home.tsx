@@ -1,5 +1,5 @@
 import type { Match, SeasonData, StandingRow, Team } from '../types';
-import { fmtDate, fmtTime, relativeDay } from '../lib/format';
+import { fmtDate, fmtTime, fmtWhen, relativeDay } from '../lib/format';
 import { lastMatch, nextMatch, teamMatches } from '../lib/standings';
 import { FavoriteButton } from './FavoriteButton';
 import { FormChips } from './FormChips';
@@ -86,7 +86,8 @@ function FavoriteCard({
       {next && (
         <section className="next">
           <h3>
-            次の試合 <span className="pill">{relativeDay(next.kickoff) || fmtDate(next.kickoff)}</span>
+            次の試合
+            {next.kickoff && <span className="pill">{relativeDay(next.kickoff) || fmtDate(next.kickoff)}</span>}
           </h3>
           <NextMatch match={next} team={team} teams={teams} />
         </section>
@@ -108,7 +109,7 @@ function FavoriteCard({
               const opp = teams.get(home ? m.awayId : m.homeId);
               return (
                 <li key={m.id}>
-                  <span className="muted">{fmtDate(m.kickoff)} {fmtTime(m.kickoff)}</span>
+                  <span className="muted">{fmtWhen(m.kickoff, m.timeKnown)}</span>
                   <span className={`ha ${home ? 'h' : 'a'}`}>{home ? 'H' : 'A'}</span>
                   <span>vs {opp?.shortName}</span>
                 </li>
@@ -128,8 +129,8 @@ function NextMatch({ match, team, teams }: { match: Match; team: Team; teams: Ma
   return (
     <div className="next-body">
       <div className="next-when">
-        <strong>{fmtDate(match.kickoff)}</strong>
-        <span>{fmtTime(match.kickoff)} キックオフ</span>
+        <strong>{match.kickoff ? fmtDate(match.kickoff) : '日程未定'}</strong>
+        {match.kickoff && <span>{match.timeKnown ? `${fmtTime(match.kickoff)} キックオフ` : '時刻未定'}</span>}
         <span className="muted">第{match.round}節{match.venue ? ` / ${match.venue}` : ''}</span>
       </div>
       <div className="next-opp">

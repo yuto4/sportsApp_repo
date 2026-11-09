@@ -3,6 +3,10 @@ const tz = 'Asia/Tokyo';
 export const fmtDate = (iso: string) =>
   new Intl.DateTimeFormat('ja-JP', { timeZone: tz, month: 'numeric', day: 'numeric', weekday: 'short' }).format(new Date(iso));
 
+/** 日付と時刻 (時刻不明なら日付のみ)。日付不明なら「日程未定」 */
+export const fmtWhen = (iso: string | undefined, timeKnown: boolean) =>
+  !iso ? '日程未定' : timeKnown ? `${fmtDate(iso)} ${fmtTime(iso)}` : fmtDate(iso);
+
 export const fmtTime = (iso: string) =>
   new Intl.DateTimeFormat('ja-JP', { timeZone: tz, hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
 

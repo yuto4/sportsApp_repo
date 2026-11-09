@@ -203,3 +203,6 @@ tr.row-fav { background: var(--fav-soft); font-weight: 700; }
 .sheet-head { cursor: default; padding: 14px 16px; }
 .sheet-body { overflow-y: auto; padding: 16px; }
 .close { background: none; border: 0; font-size: 1.6rem; color: var(--muted); }
+
+.credit { margin-top: 28px; font-size: .72rem; line-height: 1.6; color: var(--muted); }
+.credit a { color: inherit; }

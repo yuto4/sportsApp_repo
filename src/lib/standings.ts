@@ -1,5 +1,9 @@
 import type { FormResult, Match, StandingRow, Team } from '../types';
 
+/** 節 → 日時 の順に並べる (日付不明の試合があっても節順で並ぶ) */
+export const byRound = (a: Match, b: Match) =>
+  a.round - b.round || (a.kickoff ?? '').localeCompare(b.kickoff ?? '');
+
 const counted = (m: Match) =>
   m.status === 'finished' && m.homeScore !== null && m.awayScore !== null;
 
@@ -16,7 +20,7 @@ export function computeStandings(teams: Team[], matches: Match[]): StandingRow[]
     });
   }
 
-  const finished = matches.filter(counted).sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+  const finished = matches.filter(counted).sort(byRound);
   for (const m of finished) {
     const home = rows.get(m.homeId);
     const away = rows.get(m.awayId);
@@ -65,7 +69,7 @@ export function resultFor(match: Match, teamId: number): FormResult | null {
 export function teamMatches(matches: Match[], teamId: number): Match[] {
   return matches
     .filter((m) => m.homeId === teamId || m.awayId === teamId)
-    .sort((a, b) => a.kickoff.localeCompare(b.kickoff));
+    .sort(byRound);
 }
 
 export function nextMatch(matches: Match[], teamId: number): Match | undefined {
@@ -76,12 +80,14 @@ export function lastMatch(matches: Match[], teamId: number): Match | undefined {
   return teamMatches(matches, teamId).filter((m) => m.status === 'finished').at(-1);
 }
 
-/** 試合が無い場合は最も近い節を返す */
+/** これから行われる (または結果待ちの) 試合を含む最初の節。無ければ最終節 */
 export function currentRound(matches: Match[], now = new Date()): number {
   if (matches.length === 0) return 1;
+  // 3日以上前の未消化試合 (延期など) は「今節」の判定から外す
+  const cutoff = startOfDay(now).getTime() - 3 * 86_400_000;
   const upcoming = matches
-    .filter((m) => m.status !== 'finished' && new Date(m.kickoff) >= startOfDay(now))
-    .sort((a, b) => a.kickoff.localeCompare(b.kickoff))[0];
+    .filter((m) => (m.status === 'scheduled' || m.status === 'live') && (!m.kickoff || new Date(m.kickoff).getTime() >= cutoff))
+    .sort(byRound)[0];
   if (upcoming) return upcoming.round;
   return Math.max(...matches.map((m) => m.round));
 }

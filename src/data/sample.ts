@@ -79,6 +79,7 @@ export function generateSampleSeason(now = new Date(), teams: Team[] = SAMPLE_TE
         id: id++,
         round: i + 1,
         kickoff,
+        timeKnown: true,
         homeId,
         awayId,
         homeScore: finished ? hs : null,
